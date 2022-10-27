@@ -75,11 +75,11 @@ void ThreadPoolPPPCSR::execute(const int thread_id) {
       }
       if (t.add) {
         pcsr->add_edge(t.src, t.target, 1);
-        if(useSymmetric)
+        if(undirected)
           pcsr->add_edge(t.target, t.src, 1);
       } else if (!t.read) {
         pcsr->remove_edge(t.src, t.target);
-        if(useSymmetric)
+        if(undirected)
           pcsr->remove_edge(t.target, t.src);
       } else {
         pcsr->read_neighbourhood(t.src);
