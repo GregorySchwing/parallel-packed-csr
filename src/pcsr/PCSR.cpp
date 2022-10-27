@@ -911,6 +911,19 @@ vector<int> PCSR::get_neighbourhood(int src) const {
   return neighbours;
 }
 
+vector<uint32_t> PCSR::get_degrees() const{
+  vector<uint32_t> degrees;
+  degrees.resize(get_n());
+  #ifdef _OPENMP
+		#pragma omp parallel for default(none) shared(degrees, nodes)
+	#endif
+  for (int i = 0; i < nodes.size(); ++i){
+    degrees[i] = nodes[i].num_neighbors;
+  }
+  return degrees;
+}
+
+
 // Get id of PCSR node (starting from 0)
 // e.g. if every PCSR node has 8 elements, index number 5 is in PCSR node 0, index number 8 is in PCSR node 1 etc.
 // Added by Eleni Alevra

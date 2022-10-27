@@ -80,6 +80,7 @@ class PCSR {
   void remove_edge(uint32_t src, uint32_t dest);
   void read_neighbourhood(int src);
   vector<int> get_neighbourhood(int src) const;
+  vector<uint32_t> get_degrees() const;
 
   /**
    * Returns the node count
