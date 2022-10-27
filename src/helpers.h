@@ -116,6 +116,30 @@ void execute(int threads, int size, const vector<tuple<Operation, int, int>> &co
   //    }
 }
 
+
+template <typename ThreadPool_t>
+void executeInitial(int threads, int size, const vector<tuple<Operation, int, int>> &core_graph,
+                    std::unique_ptr<ThreadPool_t> &thread_pool) {
+  // Load core graph
+  update_existing_graph(core_graph, thread_pool.get(), threads, core_graph.size());
+
+
+  //    DEBUGGING CODE
+  //    Check that all edges are there and in sorted order
+  //    for (int i = 0; i < core_graph.size(); i++) {
+  //        if (!thread_pool->pcsr->edge_exists(std::get<1>(core_graph[i]),std::get<2>(core_graph[i]))) {
+  //            cout << "Not there " <<  std::get<1>(core_graph[i]) << " " <<
+  //                 std::get<2>(core_graph[i]) << endl;
+  //        }
+  //    }
+  //    for (int i = 0; i < size; i++) {
+  //        if (!thread_pool->pcsr->edge_exists(std::get<1>(updates[i]), std::get<2>(updates[i]))) {
+  //            cout << "Update not there " << std::get<1>(updates[i]) << " " <<
+  //                 std::get<2>(updates[i]) << endl;
+  //        }
+  //    }
+}
+
 enum class PCSRVersion { PPCSR, PPPCSR, PPPCSRNUMA };
 
 #endif
