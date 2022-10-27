@@ -26,6 +26,7 @@ class PPPCSR {
   std::size_t get_partiton(size_t vertex_id) const;
 
   vector<int> get_neighbourhood(int src) const;
+  vector<uint32_t> get_degrees() const;
 
   /**
    * Returns the node count

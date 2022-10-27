@@ -42,8 +42,12 @@ void ThreadPool::execute(int thread_id) {
       }
       if (t.add) {
         pcsr->add_edge(t.src, t.target, 1);
+        if(useSymmetric)
+          pcsr->add_edge(t.target, t.src, 1);
       } else if (!t.read) {
         pcsr->remove_edge(t.src, t.target);
+        if(useSymmetric)
+          pcsr->remove_edge(t.target, t.src);
       } else {
         pcsr->read_neighbourhood(t.src);
       }

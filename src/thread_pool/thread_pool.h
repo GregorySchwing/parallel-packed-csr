@@ -17,6 +17,7 @@ using namespace std;
 class ThreadPool {
  public:
   PCSR *pcsr;
+  bool useSymmetric = true;
 
   explicit ThreadPool(const int NUM_OF_THREADS, bool lock_search, uint32_t init_num_nodes, int partitions_per_domain);
   ~ThreadPool() = default;

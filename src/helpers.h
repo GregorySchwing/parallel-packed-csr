@@ -27,7 +27,7 @@ constexpr const char* OperationToString(Operation o) noexcept
     }
 }
 // Reads edge list with separator
-pair<vector<tuple<Operation, int, int>>, int> read_input(string filename, Operation defaultOp) {
+pair<vector<tuple<Operation, int, int>>, int> read_input(string filename, Operation defaultOp, int & num_nodes, int & num_edges) {
   ifstream f;
   string line;
   f.open(filename);
@@ -35,9 +35,6 @@ pair<vector<tuple<Operation, int, int>>, int> read_input(string filename, Operat
     std::cerr << "Invalid file" << std::endl;
     exit(EXIT_FAILURE);
   }
-
-  int num_nodes = 0;
-  int num_edges = 0;
 
   std::size_t pos, pos2;
 
@@ -70,6 +67,44 @@ pair<vector<tuple<Operation, int, int>>, int> read_input(string filename, Operat
   }
   return make_pair(edges, num_nodes);
 }
+
+// Reads edge list with separator
+pair<vector<tuple<Operation, int, int>>, int> read_input(string filename, Operation defaultOp) {
+  ifstream f;
+  string line;
+  f.open(filename);
+  if (!f.good()) {
+    std::cerr << "Invalid file" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  vector<tuple<Operation, int, int>> edges;
+  int num_nodes = 0;
+  std::size_t pos, pos2;
+  while (getline(f, line)) {
+    int src = stoi(line, &pos);
+    int target = stoi(line.substr(pos + 1), &pos2);
+
+    num_nodes = std::max(num_nodes, std::max(src, target));
+
+    Operation op = defaultOp;
+    if (pos + 1 + pos2 + 1 < line.length()) {
+      switch (line[pos + 1 + pos2 + 1]) {
+        case '1':
+          op = Operation::ADD;
+          break;
+        case '0':
+          op = Operation::DELETE;
+          break;
+        default:
+          cerr << "Invalid operation";
+      }
+    }
+    edges.emplace_back(op, src, target);
+  }
+  return make_pair(edges, num_nodes);
+}
+
+
 
 // Does insertions
 template <typename ThreadPool_t>

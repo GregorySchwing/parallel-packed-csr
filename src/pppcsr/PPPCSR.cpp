@@ -41,6 +41,18 @@ vector<int> PPPCSR::get_neighbourhood(int src) const {
   return partitions[get_partiton(src)].get_neighbourhood(src - distribution[get_partiton(src)]);
 }
 
+vector<uint32_t> PPPCSR::get_degrees() const {
+  vector<uint32_t> degrees;
+  for (auto & partition : partitions){
+    auto thisPartitionsDegrees = partition.get_degrees();
+    //for (auto & d : thisPartitionsDegrees)
+    //  std::cout << d << " ";
+    //std::cout << std::endl;
+    degrees.insert(degrees.end(), thisPartitionsDegrees.begin(), thisPartitionsDegrees.end());
+  }
+  return degrees;
+}
+
 void PPPCSR::add_node() { partitions.back().add_node(); }
 
 void PPPCSR::add_edge(uint32_t src, uint32_t dest, uint32_t value) {
