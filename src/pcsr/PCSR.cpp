@@ -700,6 +700,10 @@ void PCSR::add_node() {
   nodes.push_back(node);
   insert(node.beginning, sentinel, nodes.size() - 1, nullptr);
   adding_sentinels = false;
+
+  // Slower than one allocation of init_n, but handles later new node additions.
+  degrees.push_back(node.num_neighbors);
+  printf("ADDED NODE\n");
 }
 
 // This function was re-written for Eleni Alevra's implementation
@@ -774,6 +778,8 @@ void PCSR::remove_edge(uint32_t src, uint32_t dest) {
 
 PCSR::PCSR(uint32_t init_n, uint32_t src_n, bool lock_search, int domain)
     : nodes(src_n), is_numa_available{numa_available() >= 0 && domain >= 0}, domain(domain) {
+  
+  degrees.resize(init_n);
   resizeEdgeArray(2 << bsr_word(std::max(init_n + src_n, 1024u)));
   edges.global_lock = make_shared<FastLock>();
 
@@ -911,18 +917,21 @@ vector<int> PCSR::get_neighbourhood(int src) const {
   return neighbours;
 }
 
-vector<uint32_t> PCSR::get_degrees() const{
-  vector<uint32_t> degrees;
-  degrees.resize(get_n());
+vector<uint32_t> & PCSR::get_degrees(){
+  return degrees;
+}
+
+void PCSR::set_degrees(){
+  printf("degrees %d\n", degrees.size());
+  printf("nodes %d\n", nodes.size());
+
   #ifdef _OPENMP
 		#pragma omp parallel for default(none) shared(degrees, nodes)
 	#endif
   for (int i = 0; i < nodes.size(); ++i){
     degrees[i] = nodes[i].num_neighbors;
   }
-  return degrees;
 }
-
 
 // Get id of PCSR node (starting from 0)
 // e.g. if every PCSR node has 8 elements, index number 5 is in PCSR node 0, index number 8 is in PCSR node 1 etc.

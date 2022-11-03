@@ -157,7 +157,7 @@ void executeInitial(int threads, int size, const vector<tuple<Operation, int, in
                     std::unique_ptr<ThreadPool_t> &thread_pool) {
   // Load core graph
   update_existing_graph(core_graph, thread_pool.get(), threads, core_graph.size());
-
+  thread_pool->pcsr->set_degrees();
 
   //    DEBUGGING CODE
   //    Check that all edges are there and in sorted order

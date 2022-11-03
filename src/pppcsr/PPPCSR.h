@@ -12,6 +12,7 @@ class PPPCSR {
  public:
   // data members
   edge_list_t edges;
+  vector<uint32_t> degrees;
 
   PPPCSR(uint32_t init_n, uint32_t, bool lock_search, int numDomain, int partitionsPerDomain, bool use_numa);
   //    PPPCSR(uint32_t init_n, vector<condition_variable*> *cvs, bool search_lock);
@@ -26,7 +27,8 @@ class PPPCSR {
   std::size_t get_partiton(size_t vertex_id) const;
 
   vector<int> get_neighbourhood(int src) const;
-  vector<uint32_t> get_degrees() const;
+  vector<uint32_t> get_degrees();
+  void set_degrees();
 
   /**
    * Returns the node count

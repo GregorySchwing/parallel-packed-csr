@@ -13,7 +13,7 @@
 PPPCSR::PPPCSR(uint32_t init_n, uint32_t src_n, bool lock_search, int numDomain, int partitionsPerDomain, bool use_numa)
     : partitionsPerDomain(partitionsPerDomain) {
   std::size_t numDomains = numDomain;
-
+  degrees.resize(init_n);
   partitions.reserve(numDomains * partitionsPerDomain);
   distribution.reserve(numDomains * partitionsPerDomain);
   distribution.push_back(0);
@@ -41,7 +41,7 @@ vector<int> PPPCSR::get_neighbourhood(int src) const {
   return partitions[get_partiton(src)].get_neighbourhood(src - distribution[get_partiton(src)]);
 }
 
-vector<uint32_t> PPPCSR::get_degrees() const {
+vector<uint32_t> PPPCSR::get_degrees() {
   vector<uint32_t> degrees;
   for (auto & partition : partitions){
     auto thisPartitionsDegrees = partition.get_degrees();
@@ -51,6 +51,12 @@ vector<uint32_t> PPPCSR::get_degrees() const {
     degrees.insert(degrees.end(), thisPartitionsDegrees.begin(), thisPartitionsDegrees.end());
   }
   return degrees;
+}
+
+
+void PPPCSR::set_degrees(){
+  for (auto & partition : partitions)
+    partition.set_degrees();
 }
 
 void PPPCSR::add_node() { partitions.back().add_node(); }

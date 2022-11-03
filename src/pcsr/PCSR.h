@@ -69,6 +69,7 @@ class PCSR {
  public:
   // data members
   edge_list_t edges;
+  vector<uint32_t> degrees;
 
   PCSR(uint32_t init_n, uint32_t, bool lock_search, int domain = 0);
   PCSR(uint32_t init_n, vector<condition_variable *> *cvs, bool search_lock, int domain = 0);
@@ -80,7 +81,8 @@ class PCSR {
   void remove_edge(uint32_t src, uint32_t dest);
   void read_neighbourhood(int src);
   vector<int> get_neighbourhood(int src) const;
-  vector<uint32_t> get_degrees() const;
+  vector<uint32_t> & get_degrees();
+  void set_degrees();
 
   /**
    * Returns the node count
