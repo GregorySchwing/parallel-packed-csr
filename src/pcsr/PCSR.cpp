@@ -810,6 +810,11 @@ PCSR::PCSR(const PCSR& otherPCSR)
   }
 } // user-defined copy constructor
 
+PCSR& PCSR::operator=(const PCSR& otherPCSR){
+  PCSR temp(otherPCSR);
+  return temp;
+}
+
 PCSR::PCSR(uint32_t init_n, uint32_t src_n, bool lock_search, int domain)
     : nodes(src_n), is_numa_available{numa_available() >= 0 && domain >= 0}, domain(domain) {
   
