@@ -749,6 +749,8 @@ void PCSR::remove_edge(uint32_t src, uint32_t dest) {
   }
 
   nodes[src].num_neighbors--;
+  // Added by Greg
+  degrees[src]--;
 
   auto acquired_locks = acquire_remove_locks(loc_to_rem, e, src, ins_node_v, -1);
   if (acquired_locks.first == EDGE_NOT_FOUND) {
@@ -767,6 +769,8 @@ void PCSR::remove_edge(uint32_t src, uint32_t dest) {
   } else if (acquired_locks.first == NEED_RETRY) {
     // we need to re-start because when we acquired the locks things had changed
     nodes[src].num_neighbors++;
+    // Added by Greg
+    degrees[src]++;
     edges.global_lock->unlock_shared();
     remove_edge(src, dest);
   } else {
@@ -775,6 +779,36 @@ void PCSR::remove_edge(uint32_t src, uint32_t dest) {
     edges.global_lock->unlock_shared();
   }
 }
+
+PCSR::PCSR(const PCSR& otherPCSR)
+    : nodes(otherPCSR.nodes), is_numa_available(otherPCSR.is_numa_available), domain(otherPCSR.domain){
+  degrees = otherPCSR.degrees;
+  resizeEdgeArray(otherPCSR.edges.N);
+  edges.global_lock = make_shared<FastLock>();
+
+  lock_bsearch = otherPCSR.lock_bsearch;
+  if (is_numa_available) {
+    edges.node_locks = (HybridLock **)numa_alloc_onnode((edges.N / edges.logN) * sizeof(HybridLock *), domain);
+    checkAllocation(edges.node_locks);
+
+    edges.items = (edge_t *)numa_alloc_onnode(edges.N * sizeof(*(edges.items)), domain);
+    checkAllocation(edges.items);
+  } else {
+    edges.node_locks = (HybridLock **)malloc((edges.N / edges.logN) * sizeof(HybridLock *));
+    edges.items = (edge_t *)malloc(edges.N * sizeof(*(edges.items)));
+  }
+
+  for (uint32_t i = 0; i < edges.N / edges.logN; i++) {
+    edges.node_locks[i] = new HybridLock();
+  }
+
+  // evenly distribute for a uniform density
+  for (int i = 0; i < edges.N; i++) {
+    edges.items[i].src = edges.items[i].src;
+    edges.items[i].dest = edges.items[i].dest;
+    edges.items[i].value = edges.items[i].value;
+  }
+} // user-defined copy constructor
 
 PCSR::PCSR(uint32_t init_n, uint32_t src_n, bool lock_search, int domain)
     : nodes(src_n), is_numa_available{numa_available() >= 0 && domain >= 0}, domain(domain) {
@@ -1402,6 +1436,8 @@ void PCSR::add_edge_parallel(uint32_t src, uint32_t dest, uint32_t value, int re
     if (retries > 3) {
       const std::lock_guard<FastLock> lck(*edges.global_lock);
       nodes[src].num_neighbors++;
+      // Added by Greg
+      degrees[src]++;
       int pos = binary_search(&e, nodes[src].beginning + 1, nodes[src].end, false).first;
       insert(pos, e, src, nullptr);
       return;
@@ -1412,6 +1448,9 @@ void PCSR::add_edge_parallel(uint32_t src, uint32_t dest, uint32_t value, int re
     auto end = nodes[src].end;
     uint32_t first_node = get_node_id(find_leaf(&edges, beginning + 1));
     nodes[src].num_neighbors++;
+    // Added by Greg
+    degrees[src]++;
+
     pair<uint32_t, int> bs;
     uint32_t loc_to_add;
     if (lock_bsearch) {
@@ -1427,6 +1466,8 @@ void PCSR::add_edge_parallel(uint32_t src, uint32_t dest, uint32_t value, int re
         }
         edges.global_lock->unlock_shared();
         nodes[src].num_neighbors--;
+        // Added by Greg, assumes undirected
+        degrees[src]--;
         add_edge_parallel(src, dest, value, retries + 1);
         return;
       }
@@ -1439,6 +1480,8 @@ void PCSR::add_edge_parallel(uint32_t src, uint32_t dest, uint32_t value, int re
       uint32_t index_node = get_node_id(find_leaf(&edges, loc_to_add));
       if (index_node < first_node) {
         nodes[src].num_neighbors--;
+        // Added by Greg
+        degrees[src]--;
         edges.global_lock->unlock_shared();
         add_edge_parallel(src, dest, value, retries + 1);
         return;
@@ -1448,6 +1491,8 @@ void PCSR::add_edge_parallel(uint32_t src, uint32_t dest, uint32_t value, int re
         acquire_insert_locks(loc_to_add, e, src, bs.second, -1, 0);
     if (acquired_locks.first.first == NEED_RETRY) {
       nodes[src].num_neighbors--;
+      // Added by Greg
+      degrees[src]--;
       edges.global_lock->unlock_shared();
       add_edge_parallel(src, dest, value, retries + 1);
       return;
