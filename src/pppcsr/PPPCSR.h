@@ -13,7 +13,7 @@ class PPPCSR {
   // data members
   edge_list_t edges;
   vector<uint32_t> degrees;
-
+  PPPCSR(const PPPCSR& otherPPPCSR);
   PPPCSR(uint32_t init_n, uint32_t, bool lock_search, int numDomain, int partitionsPerDomain, bool use_numa);
   //    PPPCSR(uint32_t init_n, vector<condition_variable*> *cvs, bool search_lock);
   //    ~PPPCSR();

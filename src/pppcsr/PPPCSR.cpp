@@ -10,6 +10,15 @@
 #include <cmath>
 #include <iostream>
 
+PPPCSR::PPPCSR(const PPPCSR& otherPPPCSR)
+    : partitionsPerDomain(otherPPPCSR.partitionsPerDomain) {
+  degrees = otherPPPCSR.degrees;
+  partitions = otherPPPCSR.partitions;
+  distribution = otherPPPCSR.distribution;
+
+  cout << "Number of partitions: " << partitions.size() << std::endl;
+}
+
 PPPCSR::PPPCSR(uint32_t init_n, uint32_t src_n, bool lock_search, int numDomain, int partitionsPerDomain, bool use_numa)
     : partitionsPerDomain(partitionsPerDomain) {
   std::size_t numDomains = numDomain;
